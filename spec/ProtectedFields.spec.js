@@ -17,6 +17,7 @@ describe('ProtectedFields', function () {
 
     const fetched = await new Parse.Query(Parse.User).get(user.id);
     expect(fetched.has('email')).toBeFalsy();
+    expect(fetched.has('username')).toBeFalsy();
     expect(fetched.has('favoriteColor')).toBeTruthy();
   });
 
@@ -39,6 +40,7 @@ describe('ProtectedFields', function () {
 
       const fetched = await new Parse.Query(Parse.User).get(user.id);
       expect(fetched.has('email')).toBeFalsy();
+      expect(fetched.has('username')).toBeFalsy();
       expect(fetched.has('phoneNumber')).toBeFalsy();
       expect(fetched.has('favoriteColor')).toBeTruthy();
     });
@@ -46,7 +48,7 @@ describe('ProtectedFields', function () {
     it('should merge protected and sensitive for extra safety', async function () {
       const userSensitiveFields = ['phoneNumber', 'timeZone'];
 
-      const protectedFields = { _User: { '*': ['email', 'favoriteFood'] } };
+      const protectedFields = { _User: { '*': ['email', 'favoriteFood', 'username'] } };
 
       await reconfigureServer({ userSensitiveFields, protectedFields });
       const user = new Parse.User();
@@ -61,12 +63,37 @@ describe('ProtectedFields', function () {
 
       const fetched = await new Parse.Query(Parse.User).get(user.id);
       expect(fetched.has('email')).toBeFalsy();
+      expect(fetched.has('username')).toBeFalsy();
       expect(fetched.has('phoneNumber')).toBeFalsy();
       expect(fetched.has('favoriteFood')).toBeFalsy();
       expect(fetched.has('favoriteColor')).toBeTruthy();
     });
   });
 
+  describe('for empty user class', function () {
+    it('should not merge default user protected fields', async function () {
+      const userSensitiveFields = ['phoneNumber', 'timeZone'];
+
+      const protectedFields = { _User: { '*': [] } };
+
+      await reconfigureServer({ userSensitiveFields, protectedFields });
+      const user = new Parse.User();
+      user.setUsername('Alice');
+      user.setPassword('sekrit');
+      user.set('email', 'alice@aol.com');
+      user.set('phoneNumber', 8675309);
+      user.set('timeZone', 'America/Los_Angeles');
+      user.set('favoriteColor', 'yellow');
+      user.set('favoriteFood', 'pizza');
+      await user.save();
+
+      const fetched = await new Parse.Query(Parse.User).get(user.id);
+      expect(fetched.has('email')).toBeTruthy();
+      expect(fetched.has('username')).toBeTruthy();
+      expect(fetched.has('phoneNumber')).toBeFalsy();
+      expect(fetched.has('favoriteColor')).toBeTruthy();
+    });
+  });
   describe('non user class', function () {
     it('should hide fields in a non user class', async function () {
       const protectedFields = {
@@ -127,6 +154,7 @@ describe('ProtectedFields', function () {
       expect(fetchedB.has('bar')).toBeFalsy();
 
       expect(fetchedUser.has('email')).toBeFalsy();
+      expect(fetchedUser.has('username')).toBeFalsy();
       expect(fetchedUser.has('phoneNumber')).toBeFalsy();
       expect(fetchedUser.has('favoriteColor')).toBeTruthy();
     });

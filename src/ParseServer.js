@@ -427,11 +427,13 @@ function injectDefaults(options: ParseServerOptions) {
       options.protectedFields[c] = defaults.protectedFields[c];
     } else {
       Object.keys(defaults.protectedFields[c]).forEach(r => {
-        const unq = new Set([
-          ...(options.protectedFields[c][r] || []),
-          ...defaults.protectedFields[c][r],
-        ]);
-        options.protectedFields[c][r] = Array.from(unq);
+        if (Array.isArray(options.protectedFields[c][r]) && options.protectedFields[c][r].length) {
+          const unq = new Set([
+            ...(options.protectedFields[c][r] || []),
+            ...defaults.protectedFields[c][r],
+          ]);
+          options.protectedFields[c][r] = Array.from(unq);
+        }
       });
     }
   });
