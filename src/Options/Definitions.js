@@ -314,7 +314,7 @@ module.exports.ParseServerOptions = {
     default: false,
   },
   preventLoginWithUnverifiedEmail: {
-    env: 'PARSE_SERVER_PREVENT_LOGIN_WITH_UNVERIFIbanterED_EMAIL',
+    env: 'PARSE_SERVER_PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL',
     help:
       'Set to `true` to prevent a user from logging in if the email has not yet been verified and email verification is required.<br><br>Default is `false`.<br>Requires option `verifyUserEmails: true`.',
     action: parsers.booleanParser,
@@ -326,7 +326,7 @@ module.exports.ParseServerOptions = {
     action: parsers.objectParser,
     default: {
       _User: {
-        '*': ['email', 'username'],
+        '*': ['email','username'],
       },
     },
   },
